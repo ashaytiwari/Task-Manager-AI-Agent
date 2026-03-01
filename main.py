@@ -10,8 +10,6 @@ from langchain.agents import create_agent
 # from pydantic_core.core_schema import model_field
 from todoist_api_python.api import TodoistAPI
 
-import todo_actions
-
 load_dotenv()
 
 TODOIST_API_KEY = os.getenv("TODOIST_API_KEY")
@@ -36,14 +34,14 @@ llm = ChatGoogleGenerativeAI(
 )
 
 system_prompt = "You are a helpful AI assistant, You will help user manage their tasks in Todoist platform."
-user_input = "Create a new task as Learn Python"
-
-prompt = ChatPromptTemplate([
-  ("system", system_prompt), 
-  ("user", user_input),
-])
 
 agent = create_agent(llm, tools=tools, system_prompt=system_prompt)
 
-response = agent.invoke({"messages": [HumanMessage(user_input)]})
-print(response)
+while True:
+    user_input = input('You: ')
+    response = agent.invoke({"messages": [HumanMessage(user_input)]})
+
+    # Get the final AI response
+    final_message = response["messages"][-1].content
+
+    print(final_message)
