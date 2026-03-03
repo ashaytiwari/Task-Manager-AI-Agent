@@ -24,8 +24,22 @@ def add_task(task: str, description: str = None):
 
     todoist_api.add_task(content=task, description=description)
 
+@tool
+def show_tasks():
+    """Show all tasks from todoist. 
+    User this when user wants to see their tasks."""
 
-tools = [add_task]
+    results_paginator = todoist_api.get_tasks(project_id='6fxHv456Qx94hwVh')
+    tasks = []
+
+    for task_list in results_paginator:
+        for task in task_list:
+            tasks.append(task.content)
+
+    return tasks
+
+
+tools = [add_task, show_tasks]
 
 llm = ChatGoogleGenerativeAI(
   model = 'gemini-2.5-flash',
@@ -33,9 +47,17 @@ llm = ChatGoogleGenerativeAI(
   temperature=0.3
 )
 
-system_prompt = "You are a helpful AI assistant, You will help user manage their tasks in Todoist platform."
+system_prompt = """
+You are a helpful AI assistant, 
+You will help user manage their tasks in Todoist platform.
+You will help the user add tasks.
+You will help the users show existing tasks. If the user asks to show the tasks: for example, show me all tasks
+print out the tasks to the user. Print them in a bullet list format.
+"""
 
 agent = create_agent(llm, tools=tools, system_prompt=system_prompt)
+
+history = []
 
 while True:
     user_input = input('You: ')
@@ -45,3 +67,6 @@ while True:
     final_message = response["messages"][-1].content
 
     print(final_message)
+
+    history.append(HumanMessage(content=user_input))
+    history.append(AIMessage(content=final_message))
