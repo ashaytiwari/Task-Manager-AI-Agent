@@ -61,12 +61,13 @@ history = []
 
 while True:
     user_input = input('You: ')
-    response = agent.invoke({"messages": [HumanMessage(user_input)]})
+    history.append(HumanMessage(content=user_input))
+    
+    response = agent.invoke({"messages": history})
 
     # Get the final AI response
     final_message = response["messages"][-1].content
 
     print(final_message)
 
-    history.append(HumanMessage(content=user_input))
     history.append(AIMessage(content=final_message))
